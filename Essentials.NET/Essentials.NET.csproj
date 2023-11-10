@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+		<LangVersion>10.0</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<Version>1.0.1</Version>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>Essentials for any .NET project</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/sbaeumlisberger/Essentials.NET</RepositoryUrl>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
+	
+	<!-- Disable the nullable warnings when compiling for .NET Standard 2.0 -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<NoWarn>$(NoWarn);8600;8601;8602;8603;8604;8767</NoWarn>
+	</PropertyGroup>
+
+	<!-- Include nullable attributes missing in .NET Standard 2.0 -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+		<PackageReference Include="Nullable" Version="1.3.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+	
+</Project>

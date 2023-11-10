@@ -1,0 +1,1 @@
+﻿Essentials for any .NET project
