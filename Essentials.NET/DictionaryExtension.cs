@@ -70,17 +70,17 @@ public static class DictionaryExtension
     }
 
     /// <summary>Removes the first entry from the dictionary machting the given predicate.</summary>
-    public static void RemoveFirst<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<KeyValuePair<TKey, TValue>> predicate) where TKey : notnull
+    public static bool RemoveFirst<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Predicate<KeyValuePair<TKey, TValue>> predicate) where TKey : notnull
     {
         foreach (var entry in dictionary)
         {
             if (predicate(entry))
             {
                 dictionary.Remove(entry);
-                return;
+                return true;
             }
         }
-        throw new Exception("No entry machting the given predicate.");
+        return false;
     }
 
     public static void RemoveRange<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IEnumerable<TKey> keys) where TKey : notnull

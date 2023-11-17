@@ -2,7 +2,6 @@
 
 namespace Essentials.NET;
 
-
 public static class EnumerableExtension
 {
 
@@ -15,9 +14,9 @@ public static class EnumerableExtension
     /// <summary>Retrieves the first element of a sequence, or the default value if the sequence contains no elements. Returns whether the the sequence contains no elements or not.</summary>
     public static bool TryGetFirst<T>(this IEnumerable<T> enumerable, [MaybeNullWhen(false)] out T value)
     {
-        if (enumerable.Any())
+        if (enumerable.FirstOrDefault() is T first)
         {
-            value = enumerable.First();
+            value = first;
             return true;
         }
         value = default!;
@@ -50,22 +49,6 @@ public static class EnumerableExtension
         return result;
     }
 
-    /// <summary>
-    /// Determines whether two sequences contains the same elements by using the default equality comparer and without considering the order.
-    /// </summary>
-    public static bool ElementsEqual<T>(this IEnumerable<T> enumerable, IEnumerable<T> other)
-    {
-        return enumerable.ElementsEqual(other, EqualityComparer<T>.Default);
-    }
-
-    /// <summary>
-    /// Determines whether two sequences contains the same elements by using a specified <see cref="IEqualityComparer{T}"/> to compare values and without considering the order.
-    /// </summary>
-    public static bool ElementsEqual<T>(this IEnumerable<T> enumerable, IEnumerable<T> other, IEqualityComparer<T> comparer)
-    {
-        return enumerable.Count() == other.Count() && enumerable.Except(other, comparer).IsEmpty();
-    }
-
     /// <summary>Determines whether all elements in the sequence are equal.</summary>
     public static bool AllEqual<T>(this IEnumerable<T> enumerable)
     {
@@ -78,27 +61,10 @@ public static class EnumerableExtension
         return enumerable.Distinct(comparer).Count() <= 1;
     }
 
-    /// <summary>Retrieves the values of an sequence of key value pairs.</summary>
-    public static IEnumerable<TValue> GetValues<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> enumerable)
-    {
-        return enumerable.Select(kv => kv.Value);
-    }
-
-    /// <summary>Retrieves the keys of an sequence of key value pairs.</summary>
-    public static IEnumerable<TKey> GetKeys<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> enumerable)
-    {
-        return enumerable.Select(kv => kv.Key);
-    }
-
     /// <summary>Creates a dictionary from a sequence of key value pairs.</summary>
     public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> enumerable) where TKey : notnull
     {
-        Dictionary<TKey, TValue> copy = new Dictionary<TKey, TValue>();
-        foreach (KeyValuePair<TKey, TValue> kv in enumerable)
-        {
-            copy.Add(kv.Key, kv.Value);
-        }
-        return copy;
+        return enumerable.ToDictionary(kv => kv.Key, kv => kv.Value);
     }
 
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)
@@ -109,10 +75,9 @@ public static class EnumerableExtension
         }
     }
 
-    public static void ContainsAny<T>(this IEnumerable<T> enumerable, IEnumerable<T> other)
+    public static void ContainsAnyOf<T>(this IEnumerable<T> enumerable, IEnumerable<T> other)
     {
         other.Any(element => enumerable.Contains(element));
-
     }
 
 }

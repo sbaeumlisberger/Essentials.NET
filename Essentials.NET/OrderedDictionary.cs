@@ -12,19 +12,35 @@ public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadO
         set => internalDic[key] = value;
     }
 
+    public TValue this[int index]
+    {
+        get => (TValue)internalDic[index]!;
+        set => internalDic[index] = value;
+    }
+
     public ICollection<TKey> Keys => internalDic.Keys.Cast<TKey>().ToList();
 
     public ICollection<TValue> Values => internalDic.Values.Cast<TValue>().ToList();
 
-    IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => internalDic.Keys.Cast<TKey>().ToList();
+    IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => internalDic.Keys.Cast<TKey>();
 
-    IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => internalDic.Values.Cast<TValue>().ToList();
+    IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => internalDic.Values.Cast<TValue>();
 
     public int Count => internalDic.Count;
 
     public bool IsReadOnly => internalDic.IsReadOnly;
 
-    private readonly System.Collections.Specialized.OrderedDictionary internalDic = new System.Collections.Specialized.OrderedDictionary();
+    private readonly System.Collections.Specialized.OrderedDictionary internalDic;
+
+    public OrderedDictionary()
+    {
+        internalDic = new System.Collections.Specialized.OrderedDictionary();
+    }
+
+    public OrderedDictionary(int capacity)
+    {
+        internalDic = new System.Collections.Specialized.OrderedDictionary(capacity);
+    }
 
     public void Add(TKey key, TValue value)
     {
@@ -34,6 +50,11 @@ public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadO
     public void Add(KeyValuePair<TKey, TValue> item)
     {
         internalDic.Add(item.Key, item.Value);
+    }
+
+    public void Insert(int index, object key, object? value) 
+    {
+        internalDic.Insert(index, key, value);
     }
 
     public void Clear()
@@ -83,6 +104,11 @@ public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadO
             return true;
         }
         return false;
+    }
+
+    public void RemoveAt(int index) 
+    {
+        internalDic.RemoveAt(index);
     }
 
     public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)

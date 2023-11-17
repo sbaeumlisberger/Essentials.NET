@@ -67,4 +67,10 @@ public class MathUtils
         return Math.Min(Math.Max(value, min), max);
     }
 
+    /// <summary>
+    /// Checks if the difference of the given values is smaller than the specified delta.
+    public static bool ApproximateEquals(double valueA, double valueB, double delta = 0.001)
+    {
+        return Diff(valueA, valueB) < delta;
+    }
 }

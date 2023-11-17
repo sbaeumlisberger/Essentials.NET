@@ -3,7 +3,7 @@
 public static class TimeSpanFormatter
 {
 
-    public static string ToReadableString(TimeSpan timeSpan, TimeUnit accuracy = TimeUnit.Second)
+    public static string ToReadableString(this TimeSpan timeSpan, TimeUnit accuracy = TimeUnit.Second)
     {
         string readableString = "";
 

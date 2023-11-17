@@ -9,13 +9,9 @@ public static class ReadOnlyListExtension
     /// <summary>Returns the index of the first occurrence of a given element or -1 if the element is not included.</summary>
     public static int IndexOf<T>(this IReadOnlyList<T> list, T element)
     {
-        if (element == null)
-        {
-            return -1;
-        }
         for (int i = 0; i < list.Count; i++)
         {
-            if (element.Equals(list[i]))
+            if (Equals(element, list[i]))
             {
                 return i;
             }
@@ -48,12 +44,12 @@ public static class ReadOnlyListExtension
 
     /// <summary>Returns the predecessor of the given item or the deafault value if there is no predecessor.</summary>
     [return: MaybeNull]
-    public static T GetPredecessor<T>(this IReadOnlyList<T> list, T item, IReadOnlyList<T>? _ = null /*avoid ambiguity with IList extension method*/)
+    public static T GetPredecessor<T>(this IReadOnlyList<T> list, T item)
     {
         var index = list.IndexOf(item);
         if (index == -1)
         {
-            throw new ArgumentException(nameof(item));
+            throw new ArgumentOutOfRangeException(nameof(item));
         }
         if (index - 1 >= 0)
         {
@@ -64,12 +60,12 @@ public static class ReadOnlyListExtension
 
     /// <summary>Returns the successor of the given item or the deafault value if there is no successor.</summary>
     [return: MaybeNull]
-    public static T GetSuccessor<T>(this IReadOnlyList<T> list, T item, IReadOnlyList<T>? _ = null /*avoid ambiguity with IList extension method*/)
+    public static T GetSuccessor<T>(this IReadOnlyList<T> list, T item)
     {
         var index = list.IndexOf(item);
         if (index == -1)
         {
-            throw new ArgumentException(nameof(item));
+            throw new ArgumentOutOfRangeException(nameof(item));
         }
         if (index + 1 < list.Count)
         {
