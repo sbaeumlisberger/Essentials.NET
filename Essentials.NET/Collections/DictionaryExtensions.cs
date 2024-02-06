@@ -3,8 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Essentials.NET;
 
-
-public static class DictionaryExtension
+public static class DictionaryExtensions
 {
 
     /// <summary>Retrieves the value for the given key. If there is no entry <code>default (TValue)</code> is returned.</summary>

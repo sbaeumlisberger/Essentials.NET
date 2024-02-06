@@ -11,11 +11,11 @@ public class CacheTest
     private Cache<string, ValueObject> cache = new Cache<string, ValueObject>(CacheSize);
 
     [Fact]
-    public void GetOrCreate_ReturnsCachedValue() 
+    public void GetOrCreate_ReturnsCachedValue()
     {
         var value = new ValueObject("value 1");
         cache.GetOrCreate("key 1", key => value);
-       
+
         var result = cache.GetOrCreate("key 1", key => new ValueObject("value 1"));
 
         Assert.Same(value, result);
@@ -26,20 +26,20 @@ public class CacheTest
     public async void GetOrCreate_HandlesParallelAccess()
     {
         int createValueCallbackInovcationCount = 0;
-        ValueObject createValueCallback(string key) 
-        { 
+        ValueObject createValueCallback(string key)
+        {
             createValueCallbackInovcationCount++;
             return new ValueObject("value 1");
         }
 
         var tasks = new Task[1000];
-        for (int i = 0; i < tasks.Length; i++) 
+        for (int i = 0; i < tasks.Length; i++)
         {
             tasks[i] = new Task(() => cache.GetOrCreate("key 1", createValueCallback));
         }
         tasks.ForEach(task => task.Start());
         await Task.WhenAll(tasks);
-                 
+
         Assert.Equal(1, createValueCallbackInovcationCount);
     }
 
@@ -79,7 +79,7 @@ public class CacheTest
         cache.GetOrCreate("key 1", key => new ValueObject("value 1"));
 
         bool result = cache.Remove("key 1");
-        
+
         Assert.True(result);
         Assert.Empty(cache.Values);
     }
@@ -88,7 +88,7 @@ public class CacheTest
     [Fact]
     public void RemoveReturnsFalseWhenEntryNotFound()
     {
-         bool result = cache.Remove("key 1");
+        bool result = cache.Remove("key 1");
 
         Assert.False(result);
     }

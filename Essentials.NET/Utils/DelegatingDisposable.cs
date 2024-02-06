@@ -1,12 +1,12 @@
 ﻿namespace Essentials.NET;
 
-public class Disposable : IDisposable
+public class DelegatingDisposable : IDisposable
 {
     private readonly Action onDispose;
 
     private bool isDisposed = false;
 
-    public Disposable(Action onDispose)
+    public DelegatingDisposable(Action onDispose)
     {
         this.onDispose = onDispose;
     }

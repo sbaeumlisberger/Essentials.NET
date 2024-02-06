@@ -17,10 +17,7 @@ public class Cache<TKey, TValue> where TKey : notnull
 
     public Cache(int maxSize, Action<TValue>? removedCallback = null)
     {
-        if (maxSize < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxSize));
-        }
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxSize, 1);
         MaxSize = maxSize;
         this.removedCallback = removedCallback;
         cacheDictionary = new OrderedDictionary<TKey, TValue>(maxSize);

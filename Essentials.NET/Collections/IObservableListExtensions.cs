@@ -1,7 +1,6 @@
 ﻿namespace Essentials.NET;
 
-
-public static class ObservableListExtension
+public static class IObservableListExtensions
 {
 
     public static void MatchTo<T>(this IObservableList<T> list, IReadOnlyList<T> other)

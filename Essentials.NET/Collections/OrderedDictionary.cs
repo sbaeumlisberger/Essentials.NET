@@ -52,7 +52,7 @@ public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadO
         internalDic.Add(item.Key, item.Value);
     }
 
-    public void Insert(int index, object key, object? value) 
+    public void Insert(int index, object key, object? value)
     {
         internalDic.Insert(index, key, value);
     }
@@ -106,7 +106,7 @@ public class OrderedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IReadO
         return false;
     }
 
-    public void RemoveAt(int index) 
+    public void RemoveAt(int index)
     {
         internalDic.RemoveAt(index);
     }

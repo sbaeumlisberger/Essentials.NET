@@ -1,7 +1,6 @@
 ﻿namespace Essentials.NET;
 
-
-public static class ArrayExtension
+public static class ArrayExtensions
 {
 
     public static void Resize<T>(this T[] array, int newSize)

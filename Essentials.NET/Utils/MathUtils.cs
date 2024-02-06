@@ -36,40 +36,15 @@ public class MathUtils
     }
 
     /// <summary>
-    /// Clips the given value to the specified minimum and maximum.
-    /// </summary>
-    public static long Clip(long value, long min, long max)
+    /// Checks if the difference of the given values is smaller than the specified delta.
+    public static bool ApproximateEquals(double valueA, double valueB, double delta = 0.001)
     {
-        return Math.Min(Math.Max(value, min), max);
-    }
-
-    /// <summary>
-    /// Clips the given value to the specified minimum and maximum.
-    /// </summary>
-    public static int Clip(int value, int min, int max)
-    {
-        return Math.Min(Math.Max(value, min), max);
-    }
-
-    /// <summary>
-    /// Clips the given value to the specified minimum and maximum.
-    /// </summary>
-    public static double Clip(double value, double min, double max)
-    {
-        return Math.Min(Math.Max(value, min), max);
-    }
-
-    /// <summary>
-    /// Clips the given value to the specified minimum and maximum.
-    /// </summary>
-    public static float Clip(float value, float min, float max)
-    {
-        return Math.Min(Math.Max(value, min), max);
+        return Diff(valueA, valueB) < delta;
     }
 
     /// <summary>
     /// Checks if the difference of the given values is smaller than the specified delta.
-    public static bool ApproximateEquals(double valueA, double valueB, double delta = 0.001)
+    public static bool ApproximateEquals(float valueA, float valueB, float delta = 0.001f)
     {
         return Diff(valueA, valueB) < delta;
     }

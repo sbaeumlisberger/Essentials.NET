@@ -2,8 +2,7 @@
 
 namespace Essentials.NET;
 
-
-public static class CollectionExtension
+public static class ICollectionExtensions
 {
 
     /// <summary>Adds the elements of the specified sequence to the end of the collection.</summary>
@@ -44,7 +43,6 @@ public static class CollectionExtension
 
     private class ReadOnlyCollection<T> : IReadOnlyCollection<T>
     {
-
         public int Count => collection.Count;
 
         private readonly ICollection<T> collection;
