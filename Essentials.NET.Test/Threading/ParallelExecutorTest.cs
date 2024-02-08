@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Linq;
+using Xunit;
 
 namespace Essentials.NET.Test;
 
@@ -23,7 +24,7 @@ public class ParallelExecutorTest
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
-            await source.ProcessParallelAsync(_ =>
+            await source.Parallel().ProcessAsync(_ =>
             {
                 cts.Cancel();
                 return Task.FromCanceled(cancellationToken);
@@ -41,11 +42,10 @@ public class ParallelExecutorTest
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
-            await source.ProcessParallelAsync(_ =>
+            await source.Parallel(cancellationToken).ProcessAsync(_ =>
             {
                 return Task.CompletedTask;
-            },
-            cancellationToken);
+            });
         });
     }
 
