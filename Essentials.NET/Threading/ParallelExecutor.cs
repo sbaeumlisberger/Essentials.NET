@@ -5,33 +5,29 @@ public static class ParallelExecutor
     /// <summary>
     /// Creates a parallel executor that can be used to process the elements in parallel.
     /// </summary>
-    public static ParallelExecutor<T> Parallel<T>(this IReadOnlyList<T> elements, CancellationToken cancellationToken = default, IProgress<double>? progress = null)
+    /// <param name="elements">The elements to process in parallel.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the processing.</param>
+    /// <param name="progress">A progress object to report the progress of the processing.</param>
+    /// <param name="callback">A callback that is called when an element was processed. The callback receives the element and the exception if any.</param>
+    /// <param name="maxParallelTasks">The maximum number of parallel tasks. If not specified, <see cref="Environment.ProcessorCount"/> is used.</param>
+    public static ParallelExecutor<T> Parallel<T>(
+        this IReadOnlyList<T> elements,
+        CancellationToken cancellationToken = default,
+        IProgress<double>? progress = null,
+        Action<(T Element, Exception? Exception)>? callback = null,
+        int? maxParallelTasks = null)
     {
-        return new ParallelExecutor<T>(elements, cancellationToken, progress);
+        return new ParallelExecutor<T>(elements, cancellationToken, progress, callback, maxParallelTasks);
     }
 }
 
 public class ParallelExecutor<T>(
     IReadOnlyList<T> elements,
-    CancellationToken cancellationToken = default, 
-    IProgress<double>? progress = null)
+    CancellationToken cancellationToken = default,
+    IProgress<double>? progress = null,
+    Action<(T Element, Exception? Exception)>? callback = null,
+    int? maxParallelTasks = null)
 {
-    private Action<(T Element, Exception? Exception)>? callback = null;
-
-    private int maxDegreeOfParallelism = Environment.ProcessorCount;     
-
-    public ParallelExecutor<T> WithCallback(Action<(T Element, Exception? Exception)> callback)
-    {
-        this.callback = callback;
-        return this;
-    }
-
-    public ParallelExecutor<T> WithMaxDegreeOfParallelism(int maxDegreeOfParallelism)
-    {
-        this.maxDegreeOfParallelism = maxDegreeOfParallelism;
-        return this;
-    }
-
     /// <summary>Processes each element in parallel using the specified function.</summary>
     /// <exception cref="OperationCanceledException"/>
     /// <exception cref="AggregateException"/>
@@ -73,7 +69,7 @@ public class ParallelExecutor<T>(
 
         var parallelOptions = new ParallelOptions
         {
-            MaxDegreeOfParallelism = maxDegreeOfParallelism,
+            MaxDegreeOfParallelism = maxParallelTasks ?? Environment.ProcessorCount,
             CancellationToken = cancellationToken
         };
 
@@ -140,7 +136,7 @@ public class ParallelExecutor<T>(
 
         var parallelOptions = new ParallelOptions
         {
-            MaxDegreeOfParallelism = maxDegreeOfParallelism,
+            MaxDegreeOfParallelism = maxParallelTasks ?? Environment.ProcessorCount,
             CancellationToken = cancellationToken
         };
 
@@ -158,7 +154,7 @@ public class ParallelExecutor<T>(
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                results[index] = (element, exception);
+                results[index] = new Failure(element, exception);
                 callback?.Invoke((element, exception));
             }
 
