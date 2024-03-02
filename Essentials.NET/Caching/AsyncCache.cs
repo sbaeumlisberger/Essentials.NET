@@ -12,18 +12,24 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
 
     private readonly Action<TValue>? removedCallback;
 
+    private readonly Action<TValue>? beforeGetCallback;
+
     private readonly object lockObject = new();
 
-    public AsyncCache(int maxSize, Action<TValue>? removedCallback = null)
+    public AsyncCache(int maxSize, Action<TValue>? removedCallback = null, Action<TValue>? beforeGetCallback = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxSize, 1);
         cache = new Cache<TKey, CacheableTask<TValue>>(maxSize, InvokeRemovedCallback);
         this.removedCallback = removedCallback;
+        this.beforeGetCallback = beforeGetCallback;
     }
 
     public void Remove(TKey key)
     {
-        cache.Remove(key);
+        lock (lockObject)
+        {
+            cache.Remove(key);
+        }
     }
 
     public Task<TValue> GetOrCreateAsync(TKey key, Func<TKey, CancellationToken, Task<TValue>> createValueCallback, CancellationToken cancellationToken = default)
@@ -34,13 +40,13 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
             {
                 return new CacheableTask<TValue>(token => createValueCallback(key, token), () => cache.Remove(key), lockObject);
             });
-            return cacheableTask.GetTask(cancellationToken);
+            return cacheableTask.GetTask(cancellationToken, beforeGetCallback);
         }
     }
 
     private void InvokeRemovedCallback(CacheableTask<TValue> cacheableTask)
     {
-        cacheableTask.InternalTask.ContinueWith(task =>
+        cacheableTask.WaitForCompletionAsync().ContinueWith(task =>
         {
             if (task.IsCompletedSuccessfully)
             {
@@ -54,6 +60,8 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
     {
         internal Task<T> InternalTask => internalTask;
 
+        internal IReadOnlyCollection<Task> Tasks => tasks;
+
         private readonly Task<T> internalTask;
 
         private readonly Action cancellationCallback;
@@ -63,6 +71,8 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
         private readonly CancellationTokenSource cancellationTokenSource = new();
 
         private readonly ConcurrentBag<CancellationTokenRegistration> cancellationTokenRegistrations = new();
+
+        private readonly ConcurrentBag<Task> tasks = new ConcurrentBag<Task>();
 
         private int cancellationTokensCount = 0;
 
@@ -75,12 +85,19 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
             this.lockObject = lockObject;
         }
 
-        public Task<T> GetTask(CancellationToken cancellationToken)
+        public async Task<T> WaitForCompletionAsync()
+        {
+            await Task.WhenAll(tasks);
+            return await internalTask;
+        }
+
+        public Task<T> GetTask(CancellationToken cancellationToken, Action<T>? beforeCompleteCallback)
         {
             ObjectDisposedException.ThrowIf(isDisposed, this);
 
             if (internalTask.IsCompleted)
             {
+                beforeCompleteCallback?.Invoke(internalTask.Result);
                 return internalTask;
             }
 
@@ -106,6 +123,7 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
             {
                 if (task.IsCompletedSuccessfully)
                 {
+                    beforeCompleteCallback?.Invoke(task.Result);
                     tsc.TrySetResult(task.Result);
                 }
                 else if (task.IsCanceled)
@@ -118,6 +136,7 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
                 }
             });
 
+            tasks.Add(tsc.Task);
             return tsc.Task;
         }
 

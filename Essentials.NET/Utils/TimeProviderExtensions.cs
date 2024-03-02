@@ -2,13 +2,13 @@
 
 public static class TimeProviderExtensions
 {
-    public static ITimer CreateTimer(this TimeProvider timeProvider, TimerCallback callback, TimeSpan dueTime)
+    public static ITimer CreateTimer(this TimeProvider timeProvider, TimeSpan dueTime, Action callback)
     {
-        return timeProvider.CreateTimer(callback, null, dueTime, Timeout.InfiniteTimeSpan);
+        return timeProvider.CreateTimer(_ => callback(), null, dueTime, Timeout.InfiniteTimeSpan);
     }
 
-    public static ITimer CreatePerodicTimer(this TimeProvider timeProvider, TimerCallback callback, TimeSpan period)
+    public static ITimer CreatePerodicTimer(this TimeProvider timeProvider, TimeSpan period, Action callback)
     {
-        return timeProvider.CreateTimer(callback, null, period, period);
+        return timeProvider.CreateTimer(_ => callback(), null, period, period);
     }
 }

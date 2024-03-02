@@ -4,9 +4,9 @@ namespace Essentials.NET;
 
 public static class SynchronizationContextExtensions
 {
-    public static void Dispatch(this SynchronizationContext synchronizationContext, Action action)
+    public static void Dispatch(this SynchronizationContext? synchronizationContext, Action action)
     {
-        if (SynchronizationContext.Current == synchronizationContext)
+        if (synchronizationContext is null || SynchronizationContext.Current == synchronizationContext)
         {
             action();
             return;
@@ -32,9 +32,9 @@ public static class SynchronizationContextExtensions
         }
     }
 
-    public static Task DispatchAsync(this SynchronizationContext synchronizationContext, Action action)
+    public static Task DispatchAsync(this SynchronizationContext? synchronizationContext, Action action)
     {
-        if (SynchronizationContext.Current == synchronizationContext)
+        if (synchronizationContext is null || SynchronizationContext.Current == synchronizationContext)
         {
             action();
             return Task.CompletedTask;
@@ -56,9 +56,9 @@ public static class SynchronizationContextExtensions
         return tcs.Task;
     }
 
-    public static Task DispatchAsync(this SynchronizationContext synchronizationContext, Func<Task> function)
+    public static Task DispatchAsync(this SynchronizationContext? synchronizationContext, Func<Task> function)
     {
-        if (SynchronizationContext.Current == synchronizationContext)
+        if (synchronizationContext is null || SynchronizationContext.Current == synchronizationContext)
         {
             return function();
         }

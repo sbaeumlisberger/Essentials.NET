@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Xunit;
+﻿using Xunit;
 
 namespace Essentials.NET.Test;
 
@@ -127,7 +126,7 @@ public class ParallelExecutorTest
     {
         var result = await source.Parallel().TryProcessAsync(value =>
         {
-            if(value.EndsWith("9"))
+            if (value.EndsWith("9"))
             {
                 throw new Exception();
             }
