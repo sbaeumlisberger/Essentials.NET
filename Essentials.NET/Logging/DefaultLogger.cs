@@ -1,23 +1,24 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Essentials.NET.Logging;
 
 public class DefaultLogger : ILogger
 {
-    private readonly List<ILogAppender> appenders;
+    public IReadOnlyList<ILogAppender> Appenders { get; }
 
     private readonly Regex? fileNamePrefixRegex;
 
     public DefaultLogger(List<ILogAppender>? appenders = null, Regex? fileNamePrefixRegex = null)
     {
-        this.appenders = appenders ?? [new DebugAppender()];
+        Appenders = new ReadOnlyCollection<ILogAppender>(appenders ?? [new DebugAppender()]);
         this.fileNamePrefixRegex = fileNamePrefixRegex;
     }
 
     public void Dispose()
     {
-        appenders.ForEach(appender => appender.Dispose());
+        Appenders.ForEach(appender => appender.Dispose());
     }
 
     public void Debug(string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string file = "", [CallerLineNumber] int lineNumber = -1)
@@ -64,6 +65,6 @@ public class DefaultLogger : ILogger
 
     private void Append(LogLevel level, string message)
     {
-        appenders.ForEach(appender => appender.Append(level, message));
+        Appenders.ForEach(appender => appender.Append(level, message));
     }
 }

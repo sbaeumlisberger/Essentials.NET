@@ -4,6 +4,8 @@ namespace Essentials.NET.Logging;
 
 public interface ILogger : IDisposable
 {
+    public IReadOnlyList<ILogAppender> Appenders { get; }
+
     void Debug(string value, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string file = "", [CallerLineNumber] int lineNumber = -1);
 
     void Info(string value, [CallerMemberName] string memberName = "", [CallerFilePath] string file = "", [CallerLineNumber] int lineNumber = -1);
