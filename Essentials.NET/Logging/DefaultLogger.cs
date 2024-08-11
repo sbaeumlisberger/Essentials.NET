@@ -55,7 +55,7 @@ public class DefaultLogger : ILogger
 
         if (exception != null)
         {
-            Append(level, line + exception.ToString());
+            Append(level, line + ExceptionFormatter.Format(exception));
         }
         else
         {
