@@ -8,6 +8,8 @@ public class FileAppender : ILogAppender
 
     public string LogFilePath { get; private set; }
 
+    internal Task CleanupTask { get; }
+
     private readonly string logFolderPath;
 
     private readonly LogLevel level;
@@ -15,10 +17,12 @@ public class FileAppender : ILogAppender
     private readonly int maxFiles;
 
     private readonly TimeSpan maxAge;
+    
+    private readonly TimeProvider timeProvider;
 
     private readonly StreamWriter logFileWriter;
 
-    public FileAppender(string logFolderPath, LogLevel level = LogLevel.INFO, int maxFiles = 10, TimeSpan maxAge = default)
+    public FileAppender(string logFolderPath, LogLevel level = LogLevel.INFO, int maxFiles = 10, TimeSpan maxAge = default, TimeProvider? timeProvider = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxFiles, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxAge, TimeSpan.Zero);
@@ -27,13 +31,14 @@ public class FileAppender : ILogAppender
         this.level = level;
         this.maxFiles = maxFiles;
         this.maxAge = maxAge;
+        this.timeProvider = timeProvider ?? TimeProvider.System;
 
         Directory.CreateDirectory(logFolderPath);
 
         LogFilePath = BuildLogFilePath();
         logFileWriter = CreateLogWriter();
 
-        Task.Delay(CleanupDelay).ContinueWith(_ => CleanupLogFiles());
+        CleanupTask = Task.Delay(CleanupDelay, this.timeProvider).ContinueWith(_ => CleanupLogFiles());
     }
 
     public void Dispose()
@@ -53,7 +58,7 @@ public class FileAppender : ILogAppender
 
     private string BuildLogFilePath()
     {
-        return Path.Combine(logFolderPath, LogFilePrefix + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss") + ".txt");
+        return Path.Combine(logFolderPath, LogFilePrefix + timeProvider.GetLocalNow().ToString("yyyy-MM-dd-HH-mm-ss") + ".txt");
     }
 
     private StreamWriter CreateLogWriter()
@@ -68,15 +73,15 @@ public class FileAppender : ILogAppender
         {
             if (maxAge != default)
             {
-                var cleanupOlderThan = DateTime.UtcNow.Subtract(maxAge);
+                var cleanupOlderThan = timeProvider.GetUtcNow().Subtract(maxAge);
                 Directory.EnumerateFiles(logFolderPath)
-                    .Where(filePath => filePath.StartsWith(LogFilePrefix))
+                    .Where(filePath => Path.GetFileName(filePath).StartsWith(LogFilePrefix))
                     .Where(filePath => File.GetLastWriteTimeUtc(filePath) < cleanupOlderThan)
                     .ForEach(TryDeleteLogFile);
             }
 
             Directory.EnumerateFiles(logFolderPath)
-                .Where(filePath => filePath.StartsWith(LogFilePrefix))
+                .Where(filePath => Path.GetFileName(filePath).StartsWith(LogFilePrefix))
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .Skip(maxFiles)
                 .ForEach(TryDeleteLogFile);
