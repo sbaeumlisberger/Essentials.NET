@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Essentials.NET;
+﻿namespace Essentials.NET;
 
 /// <summary>
 /// Throttles the invocation of a function. After the specified function is executed the function is
@@ -224,7 +222,7 @@ public abstract class ThrottleBase<T> : IDisposable where T : notnull
         }, cancellationToken, TaskContinuationOptions.None, captureSynchronizationContext).Unwrap();
     }
 
-    private void StartTimer(CancellationToken cancellationToken) 
+    private void StartTimer(CancellationToken cancellationToken)
     {
         Task.Delay(intervalTime, timeProvider, cancellationToken).ContinueWith(
             _ => OnTimerElapsed(cancellationToken),

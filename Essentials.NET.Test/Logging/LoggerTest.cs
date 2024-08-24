@@ -3,7 +3,7 @@ using Xunit;
 
 namespace Essentials.NET.Test.Logging;
 
-public class DefaultLoggerTest
+public class LoggerTest
 {
     private class TestAppender : ILogAppender
     {
@@ -22,14 +22,14 @@ public class DefaultLoggerTest
 
 
     [Fact]
-    public void CallsAppender() 
+    public void CallsAppender()
     {
         var appender = new TestAppender();
 
-        var defautLogger = new DefaultLogger([appender]);
+        var logger = new Logger([appender]);
 
-        defautLogger.Info("Message 1");
-        defautLogger.Info("Message 2");
+        logger.Info("Message 1");
+        logger.Info("Message 2");
 
         Assert.Contains("Message 1", appender.Text);
         Assert.Contains("Message 2", appender.Text);
@@ -40,7 +40,7 @@ public class DefaultLoggerTest
     {
         var appender = new TestAppender();
 
-        Log.Configure(new DefaultLogger([appender]));
+        Log.Configure(new Logger([appender]));
 
         Log.Info("Message 1");
         Log.Info("Message 2");

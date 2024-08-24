@@ -1,10 +1,10 @@
 ﻿namespace Essentials.NET.Logging;
 
-public class DebugAppender : ILogAppender
+public class ConsoleAppender : ILogAppender
 {
     public void Append(LogLevel level, string message)
     {
-        DebugHelper.Write(message);
+        Console.Write(message);
     }
 
     public void Dispose()
