@@ -1,4 +1,6 @@
-﻿namespace Essentials.NET.Logging;
+﻿using System.Globalization;
+
+namespace Essentials.NET.Logging;
 
 public class FileAppender : ILogAppender
 {
@@ -17,7 +19,7 @@ public class FileAppender : ILogAppender
     private readonly string logFileExtensionArchive;
     private readonly TimeProvider timeProvider;
 
-    private readonly StreamWriter logFileWriter;
+    private readonly TextWriter logFileWriter;
 
     public FileAppender(
         string logFolderPath,
@@ -71,7 +73,7 @@ public class FileAppender : ILogAppender
 
     protected virtual string BuildLogFilePath()
     {
-        string formattedDateTime = timeProvider.GetLocalNow().ToString(logFileDateTimeFormat);
+        string formattedDateTime = timeProvider.GetLocalNow().ToString(logFileDateTimeFormat, CultureInfo.InvariantCulture);
         string fileName = logFilePrefix + formattedDateTime + logFileExtension;
         return Path.Combine(logFolderPath, fileName);
     }
@@ -106,10 +108,10 @@ public class FileAppender : ILogAppender
         }
     }
 
-    private StreamWriter CreateLogWriter()
+    private TextWriter CreateLogWriter()
     {
         var stream = new FileStream(LogFilePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-        return new StreamWriter(stream) { AutoFlush = true };
+        return TextWriter.Synchronized(new StreamWriter(stream) { AutoFlush = true });
     }
 
     private void TryDeleteLogFile(string filePath)

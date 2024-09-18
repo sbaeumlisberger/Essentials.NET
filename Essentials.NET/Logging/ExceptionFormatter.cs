@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Text.Json;
 
 namespace Essentials.NET.Logging;
@@ -19,6 +20,7 @@ internal static class ExceptionFormatter
         stringBuilder.Append(exception.GetType());
         stringBuilder.Append(": ");
         stringBuilder.Append(exception.Message);
+        stringBuilder.AppendLine();
 
         AppendStackTrace(stringBuilder, exception, indent);
 
@@ -32,53 +34,55 @@ internal static class ExceptionFormatter
         {
             AppendInnerException(stringBuilder, exception.InnerException, indent);
         }
-
-        stringBuilder.AppendLine();
     }
+
     private static void AppendStackTrace(StringBuilder stringBuilder, Exception exception, string indent)
     {
         if (exception.StackTrace is string stackTrace)
         {
             foreach (string line in stackTrace.Split("\n"))
             {
-                stringBuilder.AppendLine();
                 stringBuilder.Append(indent);
                 stringBuilder.Append(IndentStep);
                 stringBuilder.Append(line.Trim());
+                stringBuilder.AppendLine();
             }
         }
     }
 
     private static void AppendProperties(StringBuilder stringBuilder, Exception exception, string indent)
     {
-        foreach (var property in exception.GetType().GetProperties())
+        AppendProperty(stringBuilder, "Source", exception.Source, indent);
+
+        foreach (var key in exception.Data.Keys)
         {
-            if (property.Name == "Message"
-                || property.Name == "StackTrace"
-                || property.Name == "InnerException")
-            {
-                continue;
-            }
-            var propertyValue = property.GetValue(exception);
-            stringBuilder.AppendLine();
-            stringBuilder.Append(indent);
-            stringBuilder.Append(IndentStep);
-            stringBuilder.Append(property.Name);
-            stringBuilder.Append(": ");
-            try
-            {
-                stringBuilder.Append(JsonSerializer.Serialize(propertyValue));
-            }
-            catch
-            {
-                stringBuilder.Append(propertyValue);
-            }
+            AppendProperty(stringBuilder, "Data[" + key + "]", exception.Data[key]?.ToString(), indent);
+        }
+
+        AppendProperty(stringBuilder, "HelpLink", exception.HelpLink, indent);
+
+        if (exception.HResult != 0)
+        {
+            AppendProperty(stringBuilder, "HResult", exception.HResult.ToString(), indent);
         }
     }
 
+    private static void AppendProperty(StringBuilder stringBuilder, string propertyName, string? value, string indent)
+    {
+        if (value is not null)
+        {
+            stringBuilder.Append(indent);
+            stringBuilder.Append(IndentStep);
+            stringBuilder.Append(propertyName);
+            stringBuilder.Append(": ");
+            stringBuilder.Append(value);
+            stringBuilder.AppendLine();
+        }
+    }
+
+
     private static void AppendInnerException(StringBuilder stringBuilder, Exception innerException, string indent)
     {
-        stringBuilder.AppendLine();
         stringBuilder.Append(indent);
         stringBuilder.Append("InnerException: ");
         AppendException(stringBuilder, innerException, indent);
@@ -86,10 +90,10 @@ internal static class ExceptionFormatter
 
     private static void AppendInnerExceptions(StringBuilder stringBuilder, IReadOnlyList<Exception> innerExceptions, string indent)
     {
-        stringBuilder.AppendLine();
         stringBuilder.Append(indent);
         stringBuilder.Append("InnerExceptions:");
         stringBuilder.AppendLine();
+
         for (int i = 0; i < innerExceptions.Count; i++)
         {
             stringBuilder.Append(indent);

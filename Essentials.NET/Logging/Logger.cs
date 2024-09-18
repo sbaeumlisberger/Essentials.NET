@@ -28,34 +28,34 @@ public class Logger : ILogger
 
     public void Debug(string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
-        Write(LogLevel.DEBUG, message, exception, filePath, memberName, lineNumber);
+        Write(LogLevel.DEBUG, message, exception, memberName, filePath, lineNumber);
     }
 
     public void Info(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
-        Write(LogLevel.INFO, message, null, filePath, memberName, lineNumber);
+        Write(LogLevel.INFO, message, null, memberName, filePath, lineNumber);
     }
 
     public void Warn(string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
-        Write(LogLevel.WARN, message, exception, filePath, memberName, lineNumber);
+        Write(LogLevel.WARN, message, exception, memberName, filePath, lineNumber);
     }
 
     public void Error(string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
-        Write(LogLevel.ERROR, message, exception, filePath, memberName, lineNumber);
+        Write(LogLevel.ERROR, message, exception, memberName, filePath, lineNumber);
     }
 
     public void Fatal(string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
-        Write(LogLevel.FATAL, message, exception, filePath, memberName, lineNumber);
+        Write(LogLevel.FATAL, message, exception, memberName, filePath, lineNumber);
     }
 
     public void Write(LogLevel level, string message, Exception? exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string filePath = "", [CallerLineNumber] int lineNumber = -1)
     {
         if (disposed)
         {
-            DebugHelper.Write("Can not write log message because the logger has been disposed");
+            DebugHelper.WriteLine("Can not write log message because the logger has been disposed");
             return;
         }
 

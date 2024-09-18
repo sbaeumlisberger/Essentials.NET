@@ -13,6 +13,7 @@
 		<Description>Essentials for any .NET project</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/sbaeumlisberger/Essentials.NET</RepositoryUrl>
+		<IsAotCompatible>True</IsAotCompatible>
 	</PropertyGroup>
 
 	<ItemGroup>
