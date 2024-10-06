@@ -6,7 +6,7 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
 {
     public int CurrentSize => cache.CurrentSize;
 
-    public int MaxSize => cache.MaxSize;
+    public int? MaxSize => cache.MaxSize;
 
     private readonly Cache<TKey, CacheableTask<TValue>> cache;
 
@@ -16,10 +16,24 @@ public class AsyncCache<TKey, TValue> where TKey : notnull
 
     private readonly object lockObject = new();
 
-    public AsyncCache(int maxSize, Action<TValue>? removedCallback = null, Action<TValue>? beforeGetCallback = null)
+    public AsyncCache(int? maxSize, Action<TValue>? removedCallback = null, Action<TValue>? beforeGetCallback = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxSize, 1);
+        if (maxSize is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxSize.Value, 1);
+        }
         cache = new Cache<TKey, CacheableTask<TValue>>(maxSize, InvokeRemovedCallback);
+        this.removedCallback = removedCallback;
+        this.beforeGetCallback = beforeGetCallback;
+    }
+
+    public AsyncCache(int? maxSize, int intialCapacity, Action<TValue>? removedCallback = null, Action<TValue>? beforeGetCallback = null)
+    {
+        if (maxSize is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxSize.Value, 1);
+        }
+        cache = new Cache<TKey, CacheableTask<TValue>>(maxSize, intialCapacity, InvokeRemovedCallback);
         this.removedCallback = removedCallback;
         this.beforeGetCallback = beforeGetCallback;
     }

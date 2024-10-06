@@ -1,11 +1,12 @@
 ﻿namespace Essentials.NET;
 
 /// <summary>
-/// A simple cache with a maximum size. If the cache size is exceeded, the entry that has not been used for the longest time is removed.
+/// A simple cache with an optional maximum size. If the cache size is exceeded, 
+/// the entry that has not been retrieved for the longest time is removed.
 /// </summary>
 public class Cache<TKey, TValue> where TKey : notnull
 {
-    public int MaxSize { get; }
+    public int? MaxSize { get; }
 
     public int CurrentSize => cacheDictionary.Count;
 
@@ -15,12 +16,26 @@ public class Cache<TKey, TValue> where TKey : notnull
 
     private readonly Action<TValue>? removedCallback;
 
-    public Cache(int maxSize, Action<TValue>? removedCallback = null)
+    public Cache(int? maxSize, Action<TValue>? removedCallback = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxSize, 1);
+        if (maxSize is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxSize.Value, 1);
+        }
         MaxSize = maxSize;
         this.removedCallback = removedCallback;
-        cacheDictionary = new OrderedDictionary<TKey, TValue>(maxSize);
+        cacheDictionary = new OrderedDictionary<TKey, TValue>();
+    }
+
+    public Cache(int? maxSize, int intialCapacity, Action<TValue>? removedCallback = null)
+    {
+        if (maxSize is not null)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(maxSize.Value, 1);
+        }
+        MaxSize = maxSize;
+        this.removedCallback = removedCallback;
+        cacheDictionary = new OrderedDictionary<TKey, TValue>(intialCapacity);
     }
 
     public bool Remove(TKey key)
