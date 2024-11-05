@@ -4,11 +4,11 @@ namespace Essentials.NET.Logging;
 
 public class FileAppender : ILogAppender
 {
-    public string LogFilePath { get; private set; }
+    public string LogFilePath { get; }
+    public string LogFolderPath { get; }
 
     internal Task CleanupTask { get; }
 
-    protected readonly string logFolderPath;
     protected readonly LogLevel level;
     private readonly int maxFiles;
     private readonly TimeSpan? maxAge;
@@ -24,8 +24,8 @@ public class FileAppender : ILogAppender
     public FileAppender(
         string logFolderPath,
         LogLevel level = LogLevel.INFO,
-        int maxCount = 10,
-        TimeSpan? maxFiles = default,
+        int maxFiles = 10,
+        TimeSpan? maxAge = default,
         int cleanupDelayInMilliseconds = 5000,
         string logFilePrefix = "log-",
         string logFileDateTimeFormat = "yyyy-MM-dd-HH-mm-ss",
@@ -33,14 +33,14 @@ public class FileAppender : ILogAppender
         string logFileExtensionArchive = ".bak",
         TimeProvider? timeProvider = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxCount, 1, nameof(maxCount));
-        ArgumentOutOfRangeException.ThrowIfLessThan(maxFiles ?? TimeSpan.Zero, TimeSpan.Zero, nameof(maxFiles));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxFiles, 1, nameof(maxFiles));
+        ArgumentOutOfRangeException.ThrowIfLessThan(maxAge ?? TimeSpan.Zero, TimeSpan.Zero, nameof(FileAppender.maxFiles));
         ArgumentOutOfRangeException.ThrowIfLessThan(cleanupDelayInMilliseconds, 0, nameof(cleanupDelayInMilliseconds));
 
-        this.logFolderPath = logFolderPath;
+        LogFolderPath = logFolderPath;
         this.level = level;
-        this.maxFiles = maxCount;
-        this.maxAge = maxFiles;
+        this.maxFiles = maxFiles;
+        this.maxAge = maxAge;
         this.cleanupDelay = TimeSpan.FromMilliseconds(cleanupDelayInMilliseconds);
         this.logFilePrefix = logFilePrefix;
         this.logFileDateTimeFormat = logFileDateTimeFormat;
@@ -75,7 +75,7 @@ public class FileAppender : ILogAppender
     {
         string formattedDateTime = timeProvider.GetLocalNow().ToString(logFileDateTimeFormat, CultureInfo.InvariantCulture);
         string fileName = logFilePrefix + formattedDateTime + logFileExtension;
-        return Path.Combine(logFolderPath, fileName);
+        return Path.Combine(LogFolderPath, fileName);
     }
 
     protected virtual void ArchiveLogFile()
@@ -90,13 +90,13 @@ public class FileAppender : ILogAppender
             if (maxAge != null)
             {
                 var cleanupOlderThan = timeProvider.GetUtcNow().Subtract(maxAge.Value);
-                Directory.EnumerateFiles(logFolderPath)
+                Directory.EnumerateFiles(LogFolderPath)
                     .Where(filePath => Path.GetFileName(filePath).StartsWith(logFilePrefix))
                     .Where(filePath => File.GetLastWriteTimeUtc(filePath) < cleanupOlderThan)
                     .ForEach(TryDeleteLogFile);
             }
 
-            Directory.EnumerateFiles(logFolderPath)
+            Directory.EnumerateFiles(LogFolderPath)
                 .Where(filePath => Path.GetFileName(filePath).StartsWith(logFilePrefix))
                 .OrderByDescending(File.GetLastWriteTimeUtc)
                 .Skip(maxFiles)
