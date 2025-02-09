@@ -2,8 +2,13 @@
 
 public static class IObservableListExtensions
 {
-
+    [Obsolete("Use SyncWith instead")]
     public static void MatchTo<T>(this IObservableList<T> list, IReadOnlyList<T> other)
+    { 
+        SyncWith(list, other);
+    }
+
+    public static void SyncWith<T>(this IObservableList<T> list, IReadOnlyList<T> other)
     {
         list.RemoveRange(list.Except(other).ToList());
 
