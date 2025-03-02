@@ -9,15 +9,17 @@ public static class ParallelExecutor
     /// <param name="cancellationToken">A cancellation token to cancel the processing.</param>
     /// <param name="progress">A progress object to report the progress of the processing.</param>
     /// <param name="callback">A callback that is called when an element was processed. The callback receives the element and the exception if any.</param>
+    /// <param name="errorCallback">A callback that is called when an processing of an element has failed. The callback receives the element and the exception.</param>
     /// <param name="maxParallelTasks">The maximum number of parallel tasks. If not specified, <see cref="Environment.ProcessorCount"/> is used.</param>
     public static ParallelExecutor<T> Parallel<T>(
         this IReadOnlyList<T> elements,
         CancellationToken cancellationToken = default,
         IProgress<double>? progress = null,
         Action<(T Element, Exception? Exception)>? callback = null,
+        Action<(T Element, Exception Exception)>? failureCallback = null,
         int? maxParallelTasks = null)
     {
-        return new ParallelExecutor<T>(elements, cancellationToken, progress, callback, maxParallelTasks);
+        return new ParallelExecutor<T>(elements, cancellationToken, progress, callback, failureCallback, maxParallelTasks);
     }
 }
 
@@ -26,6 +28,7 @@ public class ParallelExecutor<T>(
     CancellationToken cancellationToken = default,
     IProgress<double>? progress = null,
     Action<(T Element, Exception? Exception)>? callback = null,
+    Action<(T Element, Exception Exception)>? failureCallback = null,
     int? maxParallelTasks = null)
 {
     /// <summary>Processes each element in parallel using the specified function.</summary>
@@ -156,6 +159,7 @@ public class ParallelExecutor<T>(
             {
                 results[index] = new Failure(element, exception);
                 callback?.Invoke((element, exception));
+                failureCallback?.Invoke((element, exception));
             }
 
             progress?.Report(Interlocked.Increment(ref processedElementsCount) / (double)elements.Count);
