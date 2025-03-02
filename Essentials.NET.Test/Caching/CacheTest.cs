@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Essentials.NET.Test;
+namespace Essentials.NET.Test.Caching;
 
 public class CacheTest
 {

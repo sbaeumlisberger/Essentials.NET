@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
-namespace Essentials.NET.Test;
+namespace Essentials.NET.Test.Threading;
 
 public class ThrottleTest : IDisposable
 {

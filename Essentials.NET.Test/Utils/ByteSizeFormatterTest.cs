@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Xunit;
 
-namespace Essentials.NET.Test;
+namespace Essentials.NET.Test.Utils;
 
 public class ByteSizeFormatterTest
 {
