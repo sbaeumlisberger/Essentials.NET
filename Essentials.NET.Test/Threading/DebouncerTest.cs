@@ -104,8 +104,8 @@ public class DebouncerTest : IDisposable
     [Fact]
     public void IgnoresAsyncExceptions()
     {
+        var intervalTime = TimeSpan.FromMilliseconds(500);
         int functionInvocationCount = 0;
-
         var function = async () =>
         {
             functionInvocationCount++;
@@ -113,19 +113,19 @@ public class DebouncerTest : IDisposable
             throw new Exception("Some exception");
         };
 
-        var debounce = new Debouncer(TimeSpan.FromMilliseconds(500), function, true, timeProvider);
+        var debounce = new Debouncer(intervalTime, function, true, timeProvider);
 
         debounce.Invoke();
 
         Assert.Equal(0, functionInvocationCount);
 
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(500));
+        AdvanceTimeStepByStep(intervalTime);
 
         Assert.Equal(1, functionInvocationCount);
 
         debounce.Invoke();
 
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(500));
+        AdvanceTimeStepByStep(intervalTime);
 
         Assert.Equal(2, functionInvocationCount);
     }
@@ -133,8 +133,8 @@ public class DebouncerTest : IDisposable
     [Fact]
     public void IgnoresSyncExceptions()
     {
+        var intervalTime = TimeSpan.FromMilliseconds(500);
         int functionInvocationCount = 0;
-
         var function = () =>
         {
             functionInvocationCount++;
@@ -143,22 +143,21 @@ public class DebouncerTest : IDisposable
             {
                 throw new Exception("Some exception");
             }
-            return Task.CompletedTask;
         };
 
-        var debounce = new Debouncer(TimeSpan.FromMilliseconds(500), function, true, timeProvider);
+        var debounce = new Debouncer(intervalTime, function, true, timeProvider);
 
         debounce.Invoke();
 
         Assert.Equal(0, functionInvocationCount);
 
-        timeProvider.Advance(TimeSpan.FromMilliseconds(500));
+        timeProvider.Advance(intervalTime);
 
         Assert.Equal(1, functionInvocationCount);
 
         debounce.Invoke();
 
-        timeProvider.Advance(TimeSpan.FromMilliseconds(500));
+        timeProvider.Advance(intervalTime);
 
         Assert.Equal(2, functionInvocationCount);
     }

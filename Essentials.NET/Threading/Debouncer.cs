@@ -1,119 +1,110 @@
 ﻿namespace Essentials.NET;
 
 /// <summary>
-/// Debounces the invocation of a function. The specified function is executed 
-/// whenever the specified time interval has elapsed since the last invocation.
+/// Executes a function after the debouncer has been invoked and a certain time span has elapsed without another invocation.
 /// </summary>
-public class Debouncer : DebouncerBase<object>
+public class Debouncer : DebouncerBase<object?>
 {
-    private static readonly object DummyInput = new object();
-
     /// <summary>
-    /// Creates an object that debounces the invocation of a function.
+    /// Creates a debouncer that executes the specified function and uses the specified debounce time.
     /// </summary>
-    /// <param name="intervalTime">The time interval without a invocation before execution takes place</param>
-    /// <param name="function">The function to be executed</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution</param>
+    /// <param name="debounceTime">The time span that must elapse without another invocation before the function is executed.</param>
+    /// <param name="function">The function to be executed.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context of the invocations should be capurted and used for execution</param>
     /// <param name="timeProvider"></param>
-    public Debouncer(TimeSpan intervalTime, Func<Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-    : base(intervalTime, _ => function(), captureSynchronizationContext, timeProvider)
+    public Debouncer(TimeSpan debounceTime, Func<Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    : base(debounceTime, (_) => function(), captureSynchronizationContext, timeProvider)
     {
     }
 
     /// <summary>
-    /// Creates an object that debounces the invocation of a function.
+    /// Creates a debouncer that executes the specified function and uses the specified debounce time.
     /// </summary>
-    /// <param name="intervalTime">The time interval without a invocation before execution takes place</param>
-    /// <param name="function">The function to be executed</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution</param>
+    /// <param name="debounceTime">The time span that must elapse without another invocation before the function is executed.</param>
+    /// <param name="function">The function to be executed.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context of the invocations should be capurted and used for execution</param>
     /// <param name="timeProvider"></param>
-    public Debouncer(TimeSpan intervalTime, Action function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, _ => { function(); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider)
+    public Debouncer(TimeSpan debounceTime, Action function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+        : base(debounceTime, (_) => function(), captureSynchronizationContext, timeProvider)
     {
     }
 
     /// <summary>
-    /// On the initial call and every first call since the last execution, debouncing is started. 
-    /// If debouncing is already in progress, the time interval is reset.
-    /// When the time interval elapses without further invocations, the function specified during creation is executed.
+    /// Invokes the debouncer. The function specified on creation is executed after the configured time span
+    /// has elapsed without another invocation.
     /// </summary>
     public void Invoke()
     {
-        InvokeBase(DummyInput);
+        InvokeBase(null);
     }
 }
 
 /// <summary>
-/// Debounces the invocation of a function. The specified function is executed 
-/// whenever the specified time interval has elapsed since the last invocation.
+/// Executes a function after the debouncer has been invoked and a certain time span has elapsed without another invocation.
 /// </summary>
-public class Debouncer<T> : DebouncerBase<T> where T : notnull
+public class Debouncer<T> : DebouncerBase<T>
 {
     /// <summary>
-    /// Creates an object that debounces the invocation of a function.
+    /// Creates a debouncer that executes the specified function and uses the specified debounce time.
     /// </summary>
-    /// <param name="intervalTime">The time interval without a invocation before execution takes place</param>
-    /// <param name="function">The function to be executed</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution</param>
+    /// <param name="debounceTime">The time span that must elapse without another invocation before the function is executed.</param>
+    /// <param name="function">The function to be executed. It is always invoked with the last input received.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context of the invocations should be capurted and used for execution</param>
     /// <param name="timeProvider"></param>
-    public Debouncer(TimeSpan intervalTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-    : base(intervalTime, function, captureSynchronizationContext, timeProvider)
+    public Debouncer(TimeSpan debounceTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    : base(debounceTime, value => function(value), captureSynchronizationContext, timeProvider)
     {
     }
 
     /// <summary>
-    /// Creates an object that debounces the invocation of a function.
+    /// Creates a debouncer that executes the specified function and uses the specified debounce time.
     /// </summary>
-    /// <param name="intervalTime">The time interval without a invocation before execution takes place</param>
-    /// <param name="function">The function to be executed</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution</param>
+    /// <param name="debounceTime">The time span that must elapse without another invocation before the function is executed.</param>
+    /// <param name="function">The function to be executed. It is always invoked with the last input received.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context of the invocations should be capurted and used for execution</param>
     /// <param name="timeProvider"></param>
-    public Debouncer(TimeSpan intervalTime, Action<T> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-    : base(intervalTime, input => { function(input); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider)
+    public Debouncer(TimeSpan debounceTime, Action<T> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    : base(debounceTime, function, captureSynchronizationContext, timeProvider)
     {
     }
 
     /// <summary>
-    /// On the initial call and every first call since the last execution, debouncing is started. 
-    /// If debouncing is already in progress, the time interval is reset. 
-    /// When the time interval elapses without further invocations, 
-    /// the function specified during creation is executed with the last received input.
+    /// Invokes the debouncer. The function specified on creation is executed after the configured time span 
+    /// has elapsed without another invocation. The function is always executed with the last input received.
     /// </summary>
-    /// <param name="input">The input that is passed to the function on execution</param>
+    /// <param name="input">The input that is passed to the function on execution.</param>
     public void Invoke(T input)
     {
         InvokeBase(input);
     }
 }
 
-public abstract class DebouncerBase<T> : IDisposable where T : notnull
+public abstract class DebouncerBase<T> : IDisposable
 {
-    private readonly TimeSpan intervalTime;
+    /// <summary>
+    /// Inidcate whether execution of the function is pending.
+    /// </summary>
+    public bool IsExecutionPending => lastUnprocessedInput is not null;
 
-    private readonly Func<T, Task> function;
-
-    private readonly bool captureSynchronizationContext = true;
-
+    private readonly TimeSpan debounceTime;
+    private readonly Action<T> function;
+    private readonly bool captureSynchronizationContext;
     private readonly TimeProvider timeProvider;
 
-    private readonly object lockObject = new object();
+    private readonly object lockObject = new();
 
-    private bool disposed = false;
+    private bool disposed;
 
-    private bool isWaiting = false;
+    private ValueHolder? lastUnprocessedInput;
 
-    private T? lastInput;
+    private long lastInvocationTimestamp;
 
-    private long lastInvocationTime;
+    private CancellationTokenSource waitingCancellationTokenSource = new();
 
-    private Task executionTask = Task.CompletedTask;
-
-    private CancellationTokenSource? cancellationTokenSource;
-
-    internal protected DebouncerBase(TimeSpan intervalTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    internal protected DebouncerBase(TimeSpan debounceTime, Action<T> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(intervalTime, TimeSpan.Zero, nameof(intervalTime));
-        this.intervalTime = intervalTime;
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(debounceTime, TimeSpan.Zero, nameof(debounceTime));
+        this.debounceTime = debounceTime;
         this.function = function;
         this.captureSynchronizationContext = captureSynchronizationContext;
         this.timeProvider = timeProvider ?? TimeProvider.System;
@@ -124,37 +115,27 @@ public abstract class DebouncerBase<T> : IDisposable where T : notnull
         lock (lockObject)
         {
             disposed = true;
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
+            waitingCancellationTokenSource.Cancel();
+            waitingCancellationTokenSource.Dispose();
         }
     }
 
     /// <summary>
-    /// When execution is pending, it is started immediately without waiting for the time interval to elapse.
+    /// If execution is pending, it is started immediately without waiting for the configured time span to elapse.
     /// </summary>
-    /// <returns>
-    /// The task of the execution or, if execution was not pending, <see cref="Task.CompletedTask"/>.
-    /// </returns>
-    public Task Flush()
+    public void Flush()
     {
         lock (lockObject)
         {
             ObjectDisposedException.ThrowIf(disposed, this);
 
-            if (lastInput is not null)
+            if (lastUnprocessedInput is not null)
             {
-                cancellationTokenSource?.Cancel();
-                cancellationTokenSource?.Dispose();
-                cancellationTokenSource = null;
-                isWaiting = false;
-                var input = lastInput;
-                lastInput = default;
-                lastInvocationTime = 0;
-                executionTask = function(input);
-                return executionTask;
+                waitingCancellationTokenSource.Cancel();
+                waitingCancellationTokenSource.Dispose();
+                waitingCancellationTokenSource = new CancellationTokenSource();
+                Execute();
             }
-            return executionTask;
         }
     }
 
@@ -164,19 +145,19 @@ public abstract class DebouncerBase<T> : IDisposable where T : notnull
         {
             ObjectDisposedException.ThrowIf(disposed, this);
 
-            lastInput = input;
-            lastInvocationTime = timeProvider.GetTimestamp();
+            bool startDebounce = lastUnprocessedInput is null;
 
-            if (!isWaiting)
+            lastUnprocessedInput = new ValueHolder(input);
+            lastInvocationTimestamp = timeProvider.GetTimestamp();
+            
+            if (startDebounce)
             {
-                isWaiting = true;
-                cancellationTokenSource = new CancellationTokenSource();
-                WaitAndThanExecute(cancellationTokenSource.Token);
+                WaitThenExecute(waitingCancellationTokenSource.Token);
             }
         }
     }
 
-    private void WaitAndThanExecute(CancellationToken cancellationToken)
+    private void WaitThenExecute(CancellationToken cancellationToken)
     {
         lock (lockObject)
         {
@@ -185,27 +166,40 @@ public abstract class DebouncerBase<T> : IDisposable where T : notnull
                 return;
             }
 
-            var elapsedTimeSinceLastInvocation = timeProvider.GetTimestamp() - lastInvocationTime;
-            var waitTime = TimeSpan.FromTicks(intervalTime.Ticks - elapsedTimeSinceLastInvocation);
+            var elapsedTimeSinceLastInvocation = timeProvider.GetElapsedTime(lastInvocationTimestamp);
+            var waitTime = debounceTime - elapsedTimeSinceLastInvocation;
 
-            if (waitTime <= TimeSpan.Zero)
+            if (waitTime > TimeSpan.Zero)
             {
-                isWaiting = false;
-                var input = lastInput!;
-                lastInput = default;
-                lastInvocationTime = 0;
-                executionTask = function(input);
-                cancellationTokenSource?.Dispose();
-                cancellationTokenSource = null;
+                Task.Delay(waitTime, timeProvider, cancellationToken).ContinueWith(
+                    _ => WaitThenExecute(cancellationToken),
+                    cancellationToken,
+                    TaskContinuationOptions.NotOnCanceled,
+                    GetTaskScheduler());
             }
             else
             {
-                Task.Delay(waitTime, timeProvider, cancellationToken).ContinueWith(
-                    _ => WaitAndThanExecute(cancellationToken),
-                    cancellationToken,
-                    TaskContinuationOptions.NotOnCanceled,
-                    captureSynchronizationContext);
+                Execute();
             }
         }
+    }
+
+    private void Execute()
+    {
+        var input = lastUnprocessedInput!;
+        lastUnprocessedInput = null;
+        function(input);
+    }
+
+    private TaskScheduler GetTaskScheduler()
+    {
+        return captureSynchronizationContext && SynchronizationContext.Current is not null
+                ? TaskScheduler.FromCurrentSynchronizationContext()
+                : TaskScheduler.Current;
+    }
+
+    private record ValueHolder(T Value)
+    {
+        public static implicit operator T(ValueHolder valueHolder) => valueHolder.Value;
     }
 }

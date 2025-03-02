@@ -16,7 +16,7 @@ public class AsyncLock
 {
     private Task lockAvailableTask = Task.CompletedTask;
 
-    private readonly object lockObject = new object();
+    private readonly object lockObject = new();
 
     /// <summary>
     /// Acquires the lock asynchronously.

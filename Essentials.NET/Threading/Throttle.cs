@@ -1,165 +1,145 @@
 ﻿namespace Essentials.NET;
 
 /// <summary>
-/// Throttles the invocation of a function. After the specified function is executed the function is
-/// not executed again until the specified time interval has elapsed and the previous execution is completed.
+/// Limits the execution of a function to a specific interval, even if the throttle is invoked much 
+/// more frequently.
+/// <br/><br/>
+/// When the throttle is invoked, it executes the function and then ignores subsequent invocations 
+/// until the execution has completed and a certain time span has elapsed. If invocations are made 
+/// during this phase, the function is then executed again and the waiting period starts anew.
 /// </summary>
-public class Throttle : ThrottleBase<object>
+public class Throttle : ThrottleBase<object?>
 {
-    private static readonly object DummyInput = new object();
-
     /// <summary>
-    /// Creates an object that throttles the invocation of a function.
+    /// Creates a throttle that executes the specifed function and uses the specified waiting period.
     /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
-    /// <param name="function">The function to be executed. May be cancelled if the execution takes longer than the interval time.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
-    /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Func<CancellationToken, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, (_, ct) => function(ct), captureSynchronizationContext, timeProvider) { }
-
-    /// <summary>
-    /// Creates an object that throttles the invocation of a function.
-    /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
+    /// <param name="waitingTime">The time to wait between executions of the function.</param>
     /// <param name="function">The function to be executed.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context 
+    /// of the invocations should be captured and used for execution.</param>
     /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Func<Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, (_, _) => function(), captureSynchronizationContext, timeProvider) { }
+    public Throttle(TimeSpan waitingTime, Func<Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+        : base(waitingTime, (_) => function(), captureSynchronizationContext, timeProvider) { }
 
     /// <summary>
     /// Creates an object that throttles the invocation of a function.
     /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
+    /// <param name="waitingTime">The time to wait between executions of the function.</param>
     /// <param name="function">The function to be executed.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context 
+    /// of the invocations should be captured and used for execution.</param>
     /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Action function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-    : base(intervalTime, (_, _) => { function(); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider) { }
+    public Throttle(TimeSpan waitingTime, Action function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    : base(waitingTime, (_) => { function(); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider) { }
 
     /// <summary>
-    /// Executes the function specified during creation as soon as the specified time interval since the last execution has elapsed.
-    /// If it is the first invocation or the time interval has elapsed before, the function is executed immediately.
-    /// If the previous execution is still running, it is cancelled and the new execution waits until completion.
+    /// Invokes the throttle that limits the execution of the function specified during creation 
+    /// to the configured interval.
     /// </summary>
     public void Invoke()
     {
-        InvokeBase(DummyInput);
+        InvokeBase(null);
     }
 }
 
 /// <summary>
-/// Throttles the invocation of a function. After the specified function is executed the function is
-/// not executed again until the specified time interval has elapsed and the previous execution is completed.
+/// Limits the execution of a function to a specific interval, even if the throttle is invoked much 
+/// more frequently.
+/// <br/><br/>
+/// When the throttle is invoked, it executes the function and then ignores subsequent invocations 
+/// until the execution has completed and a certain time span has elapsed. If invocations are made 
+/// during this phase, the function is then executed again and the waiting period starts anew.
 /// </summary>
-public class Throttle<T> : ThrottleBase<T> where T : notnull
+public class Throttle<T> : ThrottleBase<T>
 {
     /// <summary>
     /// Creates an object that throttles the invocation of a function.
     /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
-    /// <param name="function">The function to be executed. May be cancelled if the execution takes longer than the interval time.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
+    /// <param name="waitingTime">The time to wait between executions of the function.</param>
+    /// <param name="function">The function to be executed. It is always executed with the last input received.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context  
+    /// of the invocations should be captured and used for execution.</param>
     /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Func<T, CancellationToken, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, function, captureSynchronizationContext, timeProvider) { }
+    public Throttle(TimeSpan waitingTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+        : base(waitingTime, function, captureSynchronizationContext, timeProvider) { }
 
     /// <summary>
     /// Creates an object that throttles the invocation of a function.
     /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
-    /// <param name="function">The function to be executed.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
+    /// <param name="waitingTime">The time to wait between executions of the function.</param>
+    /// <param name="function">The function to be executed. It is always executed with the last input received.</param>
+    /// <param name="captureSynchronizationContext">Specifies whether the synchronization context 
+    /// of the invocations should be captured and used for execution.</param>
     /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, (input, ct) => function(input), captureSynchronizationContext, timeProvider) { }
+    public Throttle(TimeSpan waitingTime, Action<T> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+        : base(waitingTime, (value) => { function(value); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider) { }
 
     /// <summary>
-    /// Creates an object that throttles the invocation of a function.
+    /// Invokes the throttle that limits the execution of the function specified during creation 
+    /// to the configured interval. The function is always executed with the last input received.
     /// </summary>
-    /// <param name="intervalTime">The time interval for which execution is paused after an invocation.</param>
-    /// <param name="function">The function to be executed.</param>
-    /// <param name="captureSynchronizationContext">Specifies if the synchronization context of the invocations should be capurted and used for execution.</param>
-    /// <param name="timeProvider"></param>
-    public Throttle(TimeSpan intervalTime, Action<T> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
-        : base(intervalTime, (input, ct) => { function(input); return Task.CompletedTask; }, captureSynchronizationContext, timeProvider) { }
-
-    /// <summary>
-    /// Executes the function specified during creation as soon as the specified time interval since the last execution has elapsed.
-    /// If it is the first invocation or the time interval has elapsed before, the function is executed immediately.
-    /// If the previous execution is still running, it is cancelled and the new execution waits until completion.
-    /// The function is always executed with the last received input.
-    /// </summary>
-    /// <param name="input">The input that is passed to the function on execution</param>
+    /// <param name="input">The input that is passed to the function on execution.</param>
     public void Invoke(T input)
     {
         InvokeBase(input);
     }
 }
-public abstract class ThrottleBase<T> : IDisposable where T : notnull
+
+public abstract class ThrottleBase<T> : IDisposable
 {
-    private readonly TimeSpan intervalTime;
-    private readonly Func<T, CancellationToken, Task> function;
-    private readonly bool captureSynchronizationContext = true;
+    /// <summary>
+    /// Inidcate whether execution of the function is pending.
+    /// </summary>
+    public bool IsExecutionPending => lastUnprocessedInput is not null;
+
+    private readonly TimeSpan waitingTime;
+    private readonly Func<T, Task> function;
+    private readonly bool captureSynchronizationContext;
     private readonly TimeProvider timeProvider;
 
-    private readonly object lockObject = new object();
-
-    private bool canExecute = true;
-
-    private T? next;
-
-    private CancellationTokenSource? cancellationTokenSource;
-
-    private Task executionTask = Task.CompletedTask;
+    private readonly object lockObject = new();
 
     private bool disposed;
 
-    internal protected ThrottleBase(TimeSpan intervalTime, Func<T, CancellationToken, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
+    private bool canExecute = true;
+
+    private ValueHolder? lastUnprocessedInput;
+
+    private Task executionTask = Task.CompletedTask;
+
+    private CancellationTokenSource waitingCancellationTokenSource = new();
+    private CancellationToken waitingCancellationToken;
+
+    internal protected ThrottleBase(TimeSpan waitingTime, Func<T, Task> function, bool captureSynchronizationContext = true, TimeProvider? timeProvider = null)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(intervalTime, TimeSpan.Zero, nameof(intervalTime));
-        this.intervalTime = intervalTime;
+        ArgumentOutOfRangeException.ThrowIfLessThan(waitingTime, TimeSpan.Zero, nameof(waitingTime));
+        this.waitingTime = waitingTime;
         this.function = function;
         this.captureSynchronizationContext = captureSynchronizationContext;
         this.timeProvider = timeProvider ?? TimeProvider.System;
+        waitingCancellationToken = waitingCancellationTokenSource.Token;
     }
 
     public void Dispose()
     {
         lock (lockObject)
         {
-            disposed = true;
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
-            next = default;
+            if (!disposed)
+            {
+                disposed = true;
+                waitingCancellationTokenSource.Cancel();
+                waitingCancellationTokenSource.Dispose();
+            }
         }
     }
 
-    /// <summary>
-    /// Resets the throttle. If there is an active execution, it is cancelled.
-    /// </summary>
-    public void Reset()
-    {
-        lock (lockObject)
-        {
-            ObjectDisposedException.ThrowIf(disposed, this);
-
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
-            next = default;
-            canExecute = true;
-        }
-    }
 
     /// <summary>
-    /// When execution is pending, it is started immediately and the active execution is cancelled.
-    /// The new execution waits until the previous execution has ended.
+    /// If execution is pending, the execution is started immediately after the last execution 
+    /// has been completed without waiting for the configured time span to elapse.
     /// </summary>
     /// <returns>
-    /// The task of the started execution or, if execution was not pending, the task of the last started execution.
+    /// The task of the new execution or, if no execution was pending, the task of the last execution.
     /// </returns>
     public Task Flush()
     {
@@ -167,18 +147,23 @@ public abstract class ThrottleBase<T> : IDisposable where T : notnull
         {
             ObjectDisposedException.ThrowIf(disposed, this);
 
-            if (next is not null)
+            if (lastUnprocessedInput is not null)
             {
-                var input = next;
+                waitingCancellationTokenSource.Cancel();
+                waitingCancellationTokenSource.Dispose();
+                waitingCancellationTokenSource = new CancellationTokenSource();
+                waitingCancellationToken = waitingCancellationTokenSource.Token;
 
-                cancellationTokenSource?.Cancel();
-                cancellationTokenSource?.Dispose();
-                cancellationTokenSource = null;
-                next = default;
-                canExecute = true;
-
-                cancellationTokenSource = new CancellationTokenSource();
-                executionTask = ExecuteAndStartTimer(input, cancellationTokenSource.Token);
+                return executionTask.ContinueWith((_) =>
+                {
+                    lock (lockObject)
+                    {
+                        executionTask = function(lastUnprocessedInput);
+                        lastUnprocessedInput = null;
+                        executionTask.ContinueWith((_) => StartTimer(), GetTaskScheduler());
+                        return executionTask;
+                    }
+                }, GetTaskScheduler()).Unwrap();
             }
             return executionTask;
         }
@@ -193,64 +178,56 @@ public abstract class ThrottleBase<T> : IDisposable where T : notnull
             if (canExecute)
             {
                 canExecute = false;
-                cancellationTokenSource = new CancellationTokenSource();
-                executionTask = ExecuteAndStartTimer(input, cancellationTokenSource.Token);
+                executionTask = function(input);
+                executionTask.ContinueWith((_) => StartTimer(), GetTaskScheduler());
             }
             else
             {
-                next = input;
+                lastUnprocessedInput = new ValueHolder(input);
             }
         }
     }
 
-    private Task ExecuteAndStartTimer(T input, CancellationToken cancellationToken)
+    private void StartTimer()
     {
-        return executionTask.ContinueWith(_ =>
-        {
-            Task newExecutionTask;
-
-            lock (lockObject)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                newExecutionTask = function(input, cancellationToken);
-            }
-
-            StartTimer(cancellationToken);
-
-            return newExecutionTask;
-
-        }, cancellationToken, TaskContinuationOptions.None, captureSynchronizationContext).Unwrap();
+        Task.Delay(waitingTime, timeProvider, waitingCancellationToken).ContinueWith(
+              (_) => OnTimerElapsed(),
+              waitingCancellationToken,
+              TaskContinuationOptions.NotOnCanceled,
+              GetTaskScheduler());
     }
 
-    private void StartTimer(CancellationToken cancellationToken)
-    {
-        Task.Delay(intervalTime, timeProvider, cancellationToken).ContinueWith(
-            _ => OnTimerElapsed(cancellationToken),
-            cancellationToken,
-            TaskContinuationOptions.NotOnCanceled,
-            captureSynchronizationContext);
-    }
-
-    private void OnTimerElapsed(CancellationToken cancellationToken)
+    private void OnTimerElapsed()
     {
         lock (lockObject)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
-
-            if (next is not null)
+            if (waitingCancellationToken.IsCancellationRequested)
             {
-                var input = next;
-                next = default;
-                cancellationTokenSource = new CancellationTokenSource();
-                executionTask = ExecuteAndStartTimer(input, cancellationTokenSource.Token);
+                return;
+            }
+
+            if (lastUnprocessedInput is not null)
+            {
+                executionTask = function(lastUnprocessedInput);
+                lastUnprocessedInput = null;
+                executionTask.ContinueWith((_) => StartTimer(), GetTaskScheduler());
             }
             else
             {
                 canExecute = true;
             }
         }
+    }
+
+    private TaskScheduler GetTaskScheduler()
+    {
+        return captureSynchronizationContext && SynchronizationContext.Current is not null
+                ? TaskScheduler.FromCurrentSynchronizationContext()
+                : TaskScheduler.Current;
+    }
+
+    private record ValueHolder(T Value)
+    {
+        public static implicit operator T(ValueHolder valueHolder) => valueHolder.Value;
     }
 }

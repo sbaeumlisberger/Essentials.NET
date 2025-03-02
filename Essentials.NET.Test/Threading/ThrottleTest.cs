@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Time.Testing;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Essentials.NET.Test.Threading;
 
@@ -71,7 +72,7 @@ public class ThrottleTest : IDisposable
         AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(2000));
         throttle.Invoke();
 
-        Assert.Equal([0, 500, 2150], functionInvocations);
+        Assert.Equal([0, 510, 2150], functionInvocations);
     }
 
     [Fact]
@@ -98,7 +99,7 @@ public class ThrottleTest : IDisposable
 
         AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(2000));
 
-        Assert.Equal([0, 500], functionInvocations);
+        Assert.Equal([0, 510], functionInvocations);
     }
 
     [Fact]
@@ -132,15 +133,16 @@ public class ThrottleTest : IDisposable
     public void WithInput()
     {
         var intervallTime = TimeSpan.FromMilliseconds(100);
+        var executionTime = TimeSpan.FromMilliseconds(10);
 
         int functionInvocationCount = 0;
-        string? lastValue = null;
+        string? lastValue = null;    
 
         var function = async (string value) =>
         {
             functionInvocationCount++;
             lastValue = value;
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeProvider);
+            await Task.Delay(executionTime, timeProvider);
         };
 
         var throttle = new Throttle<string>(intervallTime, function, true, timeProvider);
@@ -156,6 +158,7 @@ public class ThrottleTest : IDisposable
 
         Assert.Equal(1, functionInvocationCount);
 
+        timeProvider.Advance(executionTime);
         timeProvider.Advance(intervallTime / 2);
 
         Assert.Equal(1, functionInvocationCount);
@@ -207,6 +210,7 @@ public class ThrottleTest : IDisposable
     public void AsyncThrowing()
     {
         var intervallTime = TimeSpan.FromMilliseconds(100);
+        var executionTime = TimeSpan.FromMilliseconds(10);
 
         int functionInvocationCount = 0;
 
@@ -214,7 +218,7 @@ public class ThrottleTest : IDisposable
         var function = async () =>
         {
             functionInvocationCount++;
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeProvider);
+            await Task.Delay(executionTime, timeProvider);
             if (throws)
             {
                 throw new TestException();
@@ -227,120 +231,19 @@ public class ThrottleTest : IDisposable
 
         Assert.Equal(1, functionInvocationCount);
 
-        throws = false;
-
         throttle.Invoke();
         throttle.Invoke();
         throttle.Invoke();
 
         Assert.Equal(1, functionInvocationCount);
 
+        timeProvider.Advance(executionTime);
+
+        Assert.Equal(1, functionInvocationCount);
+
         timeProvider.Advance(intervallTime);
 
         Assert.Equal(2, functionInvocationCount);
-    }
-
-    [Fact]
-    public void Reset_NextInvocationTriggersExecutionImmediately()
-    {
-        var start = timeProvider.GetTimestamp();
-
-        var functionInvocations = new List<double>();
-
-        var function = async () =>
-        {
-            functionInvocations.Add(timeProvider.GetElapsedTime(start).TotalMilliseconds);
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeProvider);
-        };
-
-        var intervallTime = TimeSpan.FromMilliseconds(100);
-        var throttle = new Throttle(intervallTime, function, true, timeProvider);
-
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Reset();
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(1000));
-
-        Assert.Equal([0, 40], functionInvocations);
-    }
-
-    [Fact]
-    public void Reset_NextInvocationWaitsForCurrentExecution()
-    {
-        var start = timeProvider.GetTimestamp();
-
-        var functionInvocations = new List<double>();
-
-        var function = async () =>
-        {
-            functionInvocations.Add(timeProvider.GetElapsedTime(start).TotalMilliseconds);
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeProvider);
-        };
-
-        var intervallTime = TimeSpan.FromMilliseconds(100);
-        var throttle = new Throttle(intervallTime, function, true, timeProvider);
-
-        throttle.Invoke();
-        throttle.Reset();
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(1000));
-
-        Assert.Equal([0, 10], functionInvocations);
-    }
-
-    [Fact]
-    public void Reset_CancelsCurrentExecution()
-    {
-        var start = timeProvider.GetTimestamp();
-
-        bool cancelled = false;
-
-        var function = async (CancellationToken cancellationToken) =>
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(5), timeProvider);
-            cancelled = cancellationToken.IsCancellationRequested;
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(TimeSpan.FromMilliseconds(5), timeProvider);
-        };
-
-        var intervallTime = TimeSpan.FromMilliseconds(100);
-        var throttle = new Throttle(intervallTime, function, true, timeProvider);
-
-        throttle.Invoke();
-        throttle.Reset();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(5));
-        Assert.True(cancelled);
-    }
-
-    [Fact]
-    public void Reset_NextInvocationAfterDelayTriggersExecutionImmediately()
-    {
-        var start = timeProvider.GetTimestamp();
-
-        var functionInvocations = new List<double>();
-
-        var function = async () =>
-        {
-            functionInvocations.Add(timeProvider.GetElapsedTime(start).TotalMilliseconds);
-            await Task.Delay(TimeSpan.FromMilliseconds(10), timeProvider);
-        };
-
-        var intervallTime = TimeSpan.FromMilliseconds(100);
-        var throttle = new Throttle(intervallTime, function, true, timeProvider);
-
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Reset();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(1000));
-
-        Assert.Equal([0, 60], functionInvocations);
     }
 
     [Fact]
@@ -371,39 +274,6 @@ public class ThrottleTest : IDisposable
 
         Assert.Equal([0, 40], functionInvocations);
     }
-
-    [Fact]
-    public void Flush_WithCancellation()
-    {
-        var start = timeProvider.GetTimestamp();
-
-        var functionInvocations = new List<double>();
-
-        var function = async (CancellationToken cancellationToken) =>
-        {
-            functionInvocations.Add(timeProvider.GetElapsedTime(start).TotalMilliseconds);
-            await Task.Delay(TimeSpan.FromMilliseconds(60), timeProvider);
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(TimeSpan.FromMilliseconds(60), timeProvider);
-        };
-
-        var intervallTime = TimeSpan.FromMilliseconds(100);
-        var throttle = new Throttle(intervallTime, function, true, timeProvider);
-
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        throttle.Invoke();
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-
-        var flushTask = throttle.Flush();
-        Assert.False(flushTask.IsCompleted);
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(20));
-        AdvanceTimeStepByStep(TimeSpan.FromMilliseconds(120));
-        Assert.True(flushTask.IsCompleted);
-
-        Assert.Equal([0, 60], functionInvocations);
-    }
-
 
     private void AdvanceTimeStepByStep(TimeSpan timeSpan)
     {
