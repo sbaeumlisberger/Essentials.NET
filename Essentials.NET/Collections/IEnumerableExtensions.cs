@@ -76,9 +76,9 @@ public static class IEnumerableExtensions
         }
     }
 
-    public static void ContainsAnyOf<T>(this IEnumerable<T> enumerable, IEnumerable<T> other)
+    public static bool ContainsAnyOf<T>(this IEnumerable<T> enumerable, IEnumerable<T> other)
     {
-        other.Any(element => enumerable.Contains(element));
+        return other.Any(element => enumerable.Contains(element));
     }
 
 #if NETSTANDARD2_0
