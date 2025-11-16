@@ -1,1 +1,25 @@
 ﻿Essentials for any .NET project
+
+- Collections
+  - Helpful extensions
+  - DropOutStack
+  - WeakDictionary
+  - ObservableList
+- Threading
+  - AsyncLock
+  - CancelableTaskRunner
+  - ParallelExecutor
+  - Debouncer
+  - Throttle 
+- Caching
+  - Cache
+  - AsyncCache
+- Utilities
+  - StringUtils
+  - MathUtils
+  - ByteSizeFormatter
+  - TimeSpanFormatter
+  - DelegatingDisposable
+  - and more
+- Logging Framework
+  - Simple and extensible

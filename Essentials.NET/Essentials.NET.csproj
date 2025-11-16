@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>4.0.1</Version>
+		<Version>4.1.0</Version>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Description>Essentials for any .NET project</Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
