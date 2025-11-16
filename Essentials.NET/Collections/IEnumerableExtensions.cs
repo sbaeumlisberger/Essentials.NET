@@ -81,45 +81,6 @@ public static class IEnumerableExtensions
         return other.Any(element => enumerable.Contains(element));
     }
 
-#if NETSTANDARD2_0
-    public static IEnumerable<TSource[]> Chunk<TSource>(this IEnumerable<TSource> source, int size)
-    {
-        if (source == null)
-        {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (size < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(size));
-        }
-
-        using IEnumerator<TSource> e = source.GetEnumerator();
-        while (e.MoveNext())
-        {
-            TSource[] chunk = new TSource[size];
-            chunk[0] = e.Current;
-
-            int i = 1;
-            for (; i < chunk.Length && e.MoveNext(); i++)
-            {
-                chunk[i] = e.Current;
-            }
-
-            if (i == chunk.Length)
-            {
-                yield return chunk;
-            }
-            else
-            {
-                Array.Resize(ref chunk, i);
-                yield return chunk;
-                yield break;
-            }
-        }
-    }
-#endif
-
     /// <summary>Returns the predecessor of the given element or the deafault value if there is no predecessor.</summary>
     [return: MaybeNull]
     public static T GetPredecessor<T>(this IEnumerable<T> enumerable, T element)

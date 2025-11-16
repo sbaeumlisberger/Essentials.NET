@@ -58,7 +58,7 @@ public class Cache<TKey, TValue> where TKey : notnull
         {
             if (cacheDictionary.TryGetValue(key, out var value))
             {
-                if (!Equals(value, cacheDictionary[cacheDictionary.Count - 1]))
+                if (!Equals(value, cacheDictionary.GetAt(cacheDictionary.Count - 1).Value))
                 {
                     cacheDictionary.Remove(key);
                     cacheDictionary.Add(key, value);
@@ -79,7 +79,7 @@ public class Cache<TKey, TValue> where TKey : notnull
 
     private void RemoveOldestCacheEntry()
     {
-        var value = cacheDictionary[0];
+        var value = cacheDictionary.GetAt(0).Value;
         cacheDictionary.RemoveAt(0);
         removedCallback?.Invoke(value);
     }
