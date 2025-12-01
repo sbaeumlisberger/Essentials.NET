@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Essentials.NET.Logging;
@@ -13,7 +14,7 @@ public class Logger : ILogger
 
     public Logger(IEnumerable<ILogAppender>? appenders = null, ILogFormat? logFormat = null)
     {
-        Appenders = new ReadOnlyCollection<ILogAppender>(appenders?.ToList() ?? [new DebugAppender()]);
+        Appenders = new ReadOnlyCollection<ILogAppender>(appenders?.ToList() ?? [new TraceAppender()]);
         this.logFormat = logFormat ?? new DefaultLogFormat();
     }
 
@@ -55,7 +56,7 @@ public class Logger : ILogger
     {
         if (disposed)
         {
-            DebugHelper.WriteLine("Can not write log message because the logger has been disposed");
+            Trace.WriteLine("Can not write log message because the logger has been disposed");
             return;
         }
 

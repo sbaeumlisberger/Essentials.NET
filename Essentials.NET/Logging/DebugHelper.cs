@@ -10,9 +10,4 @@ internal static class DebugHelper
     {
         Debug.Write(message);
     }
-
-    public static void WriteLine(string message)
-    {
-        Debug.WriteLine(message);
-    }
 }
